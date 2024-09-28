@@ -1,94 +1,77 @@
-/** @jsxImportSource @emotion/react */
-import React, { useRef } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { Text } from '@react-three/drei'
-import * as THREE from 'three'
-import { FaLinkedin, FaGithub, FaTwitter, FaFileAlt, FaEnvelope } from 'react-icons/fa'
-import { IconType } from 'react-icons'
-import { css } from '@emotion/react';
+import React, { useEffect } from 'react';
+import '../App.css'; // Make sure to import the CSS file
 
-const SocialIcon = ({ Icon, href, color }: { Icon: IconType; href: string; color: string }) => {
-  const meshRef = useRef<THREE.Mesh>(null)
+/**
+ * Navbar component that renders a footer with social profiles and a starry background
+ */
+const Navbar: React.FC = () => {
+  useEffect(() => {
+    createStars();
+    createConstellation();
+  }, []);
 
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime) * 0.2
-      meshRef.current.rotation.y = Math.cos(state.clock.elapsedTime) * 0.2
-    }
-  })
-
-  return (
-    <mesh
-      ref={meshRef}
-      onClick={() => window.open(href, '_blank')}
-      onPointerOver={() => (document.body.style.cursor = 'pointer')}
-      onPointerOut={() => (document.body.style.cursor = 'default')}
-    >
-      {/* Box geometry */}
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={color} />
-      {/* Instead of rendering an icon directly, convert it to string and render as Text */}
-      <Text
-        position={[0, 0, 0.55]} // Slightly in front of the box
-        fontSize={0.4}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {Icon.name} {/* Use icon name or pass an appropriate string */}
-      </Text>
-    </mesh>
-  )
-}
-
-const Navbar = () => {
-  const pixelateAnimation = css`
-    @keyframes pixelate {
-      0% {
-        transform: scale(1);
+  /**
+   * Creates star elements and appends them to the stars container
+   */
+  const createStars = () => {
+    const starsContainer = document.getElementById('stars');
+    if (starsContainer) {
+      for (let i = 0; i < 100; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+        star.style.width = `${Math.random() * 2 + 1}px`;
+        star.style.height = star.style.width;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.animationDuration = `${Math.random() * 3 + 2}s`;
+        starsContainer.appendChild(star);
       }
-      // ... rest of the animation keyframes ...
     }
-  `;
+  };
+
+  /**
+   * Creates constellation lines and appends them to the constellation container
+   */
+  const createConstellation = () => {
+    const constellation = document.getElementById('constellation');
+    const lines = [
+      {x1: 0, y1: 75, x2: 100, y2: 25, delay: 0},
+      {x1: 100, y1: 25, x2: 200, y2: 50, delay: 0.5},
+      {x1: 200, y1: 50, x2: 300, y2: 75, delay: 1},
+    ];
+    
+    if (constellation) {
+      lines.forEach(line => {
+        const el = document.createElement('div');
+        el.classList.add('constellation-line');
+        el.style.width = `${Math.sqrt(Math.pow(line.x2 - line.x1, 2) + Math.pow(line.y2 - line.y1, 2))}px`;
+        el.style.left = `${line.x1}px`;
+        el.style.top = `${line.y1}px`;
+        el.style.transform = `rotate(${Math.atan2(line.y2 - line.y1, line.x2 - line.x1)}rad)`;
+        el.style.transformOrigin = 'left center';
+        el.style.animation = `fadeIn 2s ${line.delay}s forwards`;
+        constellation.appendChild(el);
+      });
+    }
+  };
 
   return (
-    <nav className="absolute top-4 left-4 right-4 flex justify-between items-center z-10">
-      <div className="text-2xl font-bold text-white">
-        {['R', 'i', 's', 'h', 'a', 'b', '   ', 'S', 'i', 'n', 'g', 'h'].map((char, index) => (
-          <span
-            key={index}
-            className="inline-block pixel-char"
-            style={{
-              animation: `pixelate 0.5s ease-in-out ${index * 0.1}s infinite alternate`,
-            }}
-          >
-            {char}
-          </span>
-        ))}
+    <footer className="footer fixed bottom-0 left-0 right-0">
+      {/* <div className="stars" id="stars"></div>
+      <div className="constellation" id="constellation"></div> */}
+      <div className="footer-content">
+        <h2 className="mb-2">BUILDING YOUR NEXT</h2>
+        <p className="mb-4">G R E A T &nbsp; P R O D U C T</p>
+        <div className="social-icons flex justify-center space-x-4">
+          <a href="#" title="LinkedIn" className="social-icon transform hover:-translate-y-2 transition-transform duration-300">LinkedIn</a>
+          <a href="#" title="GitHub" className="social-icon transform hover:-translate-y-2 transition-transform duration-300">GitHub</a>
+          <a href="#" title="Twitter" className="social-icon transform hover:-translate-y-2 transition-transform duration-300">Twitter</a>
+          <a href="#" title="Medium" className="social-icon transform hover:-translate-y-2 transition-transform duration-300">Resume</a>
+          <a href="#" title="Email" className="social-icon transform hover:-translate-y-2 transition-transform duration-300">Email</a>
+        </div>
       </div>
-      <div css={pixelateAnimation}>
-        Hire 
-      </div>
-      <div className="flex space-x-4">
-        {/* Render social icons as regular React components */}
-        <a href="https://www.linkedin.com/in/yourusername" target="_blank" rel="noopener noreferrer">
-          <FaLinkedin className="text-2xl text-[#0077B5] hover:text-blue-400 transition-colors" />
-        </a>
-        <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer">
-          <FaGithub className="text-2xl text-[#333] hover:text-gray-600 transition-colors" />
-        </a>
-        <a href="https://twitter.com/yourusername" target="_blank" rel="noopener noreferrer">
-          <FaTwitter className="text-2xl text-[#1DA1F2] hover:text-blue-300 transition-colors" />
-        </a>
-        <a href="/path-to-your-resume.pdf" target="_blank" rel="noopener noreferrer">
-          <FaFileAlt className="text-2xl text-[#FFA500] hover:text-yellow-300 transition-colors" />
-        </a>
-        <a href="mailto:your.email@example.com">
-          <FaEnvelope className="text-2xl text-[#D44638] hover:text-red-400 transition-colors" />
-        </a>
-      </div>
-    </nav>
-  )
-}
+    </footer>
+  );
+};
 
-export default Navbar
+export default Navbar;

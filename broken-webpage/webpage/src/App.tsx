@@ -1,8 +1,9 @@
 import React from 'react';
 import './App.css';
 import Portfolio from './components/Portfolio';
-import Chatbot from './components/Chatbot';
-
+// import MysticalLandscape from './components/theme1/Landscape';
+// import Landscape from './components/theme1/Landscape';
+import AuroraEffect from './components/AuroraParticle';
 /**
  * App Component
  * 
@@ -14,8 +15,11 @@ const App: React.FC = () => {
   return (
     <div className="app-container">
         {/* <Chatbot /> */}
+        {/* <ParticleSystem /> */}
+        {/* <AuroraEffect /> */}
         <Portfolio />
-      
+        {/* <MysticalLandscape /> */}
+        {/* <Landscape /> */}
     </div>
   );
 };

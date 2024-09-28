@@ -1,12 +1,37 @@
 import React, { useRef, useMemo, useEffect } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame, useThree, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 
+/**
+ * AuroraBorealis Component
+ * 
+ * This component creates an animated aurora borealis effect using Three.js and React Three Fiber.
+ * It uses custom shaders to generate the aurora effect with dynamic colors and movements.
+ * The aurora colors are now focused on shades of green and light yellow.
+ */
 function AuroraBorealis() {
   const meshRef1 = useRef<THREE.Mesh>(null);
   const meshRef2 = useRef<THREE.Mesh>(null);
   const meshRef3 = useRef<THREE.Mesh>(null);
+  const backgroundRef = useRef<THREE.Mesh>(null);
   const { viewport, scene } = useThree();
+
+  // Load the background image
+  // Load the .png image
+  const imageTexture = useLoader(THREE.TextureLoader, '../../assets/landscape.png');
+  
+  // Load the .avif image
+  const avifTexture = useLoader(THREE.TextureLoader, '../../assets/aurora.avif');
+  
+  // Load the .mp4 video
+  // const videoTexture = useMemo(() => {
+  //   const video = document.createElement('video');
+  //   video.src = '../../assets/nightscene.mp4';
+  //   video.loop = true;
+  //   video.muted = true;
+  //   video.play();
+  //   return new THREE.VideoTexture(video);
+  // }, []);
 
   useEffect(() => {
     scene.fog = new THREE.FogExp2(0x000000, 0.005);
@@ -14,6 +39,10 @@ function AuroraBorealis() {
 
   const geometry = useMemo(() => {
     return new THREE.PlaneGeometry(viewport.width, viewport.height, 300, 300);
+  }, [viewport.width, viewport.height]);
+
+  const backgroundGeometry = useMemo(() => {
+    return new THREE.PlaneGeometry(viewport.width, viewport.height);
   }, [viewport.width, viewport.height]);
 
   const material = useMemo(() => {
@@ -138,11 +167,11 @@ function AuroraBorealis() {
 
           // Edge glow
           float edgeGlow = smoothstep(0.5, 1.0, vNoise);
-          baseColor += edgeGlow * vec3(1.0, 0.5, 0.2) * 0.5;
+          baseColor += edgeGlow * vec3(0.8, 1.0, 0.6) * 0.5;
 
           // Sparkle effect
           float sparkle = pow(sin(vUv.x * 100.0 + time * 5.0) * sin(vUv.y * 100.0 + time * 3.0), 20.0);
-          baseColor += sparkle * vec3(1.0);
+          baseColor += sparkle * vec3(1.0, 1.0, 0.8);
 
           // Fog calculation
           float depth = gl_FragCoord.z / gl_FragCoord.w;
@@ -154,12 +183,21 @@ function AuroraBorealis() {
       `,
       uniforms: {
         time: { value: 0 },
-        color1: { value: new THREE.Color(0x1a237e) },
-        color2: { value: new THREE.Color(0x7c4dff) },
-        color3: { value: new THREE.Color(0x00bcd4) },
-        color4: { value: new THREE.Color(0x4caf50) },
-        fogDensity: { value: 0.005 },
-        fogColor: { value: new THREE.Color(0x000000) },
+        color1: { value: new THREE.Color(0x00FF87) }, // Bright green
+        color2: { value: new THREE.Color(0x1AFF00) }, // Lime green
+        color3: { value: new THREE.Color(0x39FF14) }, // Neon green
+        color4: { value: new THREE.Color(0xCCFF00) }, // Fluorescent yellow-green
+        color5: { value: new THREE.Color(0x40E0D0) }, // Turquoise (for subtle variation)
+        auroraIntensity: { value: 1.0 },
+        waveFrequency: { value: 0.005 },
+        fogDensity: { value: 0.03
+         },
+        fogColor: { value: new THREE.Color(0x001F3F) }, // Dark blue for night sky
+        noiseScale: { value: 2.0 },
+        colorShiftSpeed: { value: 0.5 },
+        starIntensity: { value: 0.8 },
+        windSpeed: { value: 0.8 },
+        pulseFrequency: { value: 0.5 },
       },
       transparent: true,
       blending: THREE.AdditiveBlending,
@@ -177,11 +215,11 @@ function AuroraBorealis() {
       mat.uniforms.time.value = time + index * 0.1;
 
       // Dynamic color shifts
-      const hue = (Math.sin(time * 0.1 + index * 0.5) + 1) * 0.5;
-      mat.uniforms.color1.value.setHSL(hue, 0.7, 0.5);
-      mat.uniforms.color2.value.setHSL((hue + 0.2) % 1, 0.8, 0.6);
-      mat.uniforms.color3.value.setHSL((hue + 0.4) % 1, 0.9, 0.7);
-      mat.uniforms.color4.value.setHSL((hue + 0.6) % 1, 0.7, 0.5);
+      const hue = (Math.sin(time * 0.1 + index * 0.5) + 1) * 0.1;
+      mat.uniforms.color1.value.setHSL(0.25 + hue * 0.1, 0.7, 0.2); // Shift between light green shades
+      mat.uniforms.color2.value.setHSL(0.3 + hue * 0.1, 0.8, 0.6);
+      mat.uniforms.color3.value.setHSL(0.15 + hue * 0.1, 0.9, 0.7);
+      mat.uniforms.color4.value.setHSL(0.1 + hue * 0.1, 0.7, 0.8); // Shift towards light yellow
     });
 
     // Dynamic parallax movement
@@ -196,8 +234,26 @@ function AuroraBorealis() {
 
   return (
     <>
+      {/* Background image */}
+      <mesh 
+        ref={backgroundRef} 
+        position={[0, 3.75, -10]} // Moved closer to the camera
+        scale={[27.25, 17, 1]}    // Adjusted scale for better visibility
+      >
+        <planeGeometry args={[1.8, 1]} />
+        <meshBasicMaterial 
+          map={imageTexture} 
+          transparent 
+          opacity={0.9}        // Reduced opacity for better visibility
+          color={new THREE.Color(1, 1.0, 1/3)} // Adjusted color for better contrast with green-yellow aurora
+        >
+         
+          <primitive attach="map" object={avifTexture} />
+        </meshBasicMaterial>
+      </mesh>
+
       {/* Parallax depth: multiple layers of auroras */}
-      <mesh ref={meshRef1} geometry={geometry} material={material} position={[0, 0, -5]} />
+      <mesh ref={meshRef1} geometry={geometry} material={material} position={[0, 3, -5]} />
       <mesh ref={meshRef2} geometry={geometry} material={material} position={[0, 0, -10]} />
       <mesh ref={meshRef3} geometry={geometry} material={material} position={[0, 0, -15]} />
     </>

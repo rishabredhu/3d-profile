@@ -1,105 +1,94 @@
-'use client'
+import React, { Suspense, useState, useEffect, useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { EffectComposer, Bloom, Pixelation } from '@react-three/postprocessing';
+import { KernelSize } from 'postprocessing';
+import { Vector3, Group } from 'three';
+import AuroraBorealis from './AuroraBorealis';
+import { FaComments } from 'react-icons/fa';
+import Navbar from './NavBar';
+import ChatbotComponent from './Chatbot';
+import AuroraEffect from './AuroraParticle';
+import AbstractFont from './theme1/AbstractFont';
+import { Button, ScrollArea } from './ui/Elements';
+import { Text3D } from '@react-three/drei';
 
-import React, { useState, useEffect, useRef } from 'react'
-import { Canvas } from '@react-three/fiber'
-// import { OrbitControls } from '@react-three/drei'
-import { EffectComposer, Bloom, Pixelation } from '@react-three/postprocessing'
-import { KernelSize } from 'postprocessing'
-// import * as THREE from 'three'
-import AuroraBorealis from './AuroraBorealis'
-import { FaLinkedin, FaGithub, FaTwitter, FaFileAlt, FaEnvelope, FaMapMarkerAlt, FaComments } from 'react-icons/fa'
-import Navbar from './NavBar'
-import Chatbot from './Chatbot'
+// Rotating scene component
+const RotatingScene = ({ children }: { children: React.ReactNode }) => {
+  const groupRef = useRef<Group>(null);
 
+  useFrame(({ clock }) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y =
+        Math.sin(clock.getElapsedTime() * 0.1) * 0.2;
+    }
+  });
 
+  return <group ref={groupRef}>{children}</group>;
+};
+
+/**
+ * Portfolio component
+ */
 export default function Portfolio() {
-  const [loading, setLoading] = useState(true)
-  const [loadingProgress, setLoadingProgress] = useState(0)
-  const scrollRef = useRef(0)
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false) // State to control chatbot visibility
-
+  const [showChatbot, setShowChatbot] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    document.body.style.margin = '0'
-    document.body.style.padding = '0'
-    document.body.style.overflow = 'hidden'
+    setIsMounted(true);
+  }, []);
 
-    const timer = setInterval(() => {
-      setLoadingProgress((prev) => {
-        if (prev >= 99) {
-          clearInterval(timer)
-          setTimeout(() => setLoading(false), 1000)
-          return 99
-        }
-        return prev + 1
-      })
-    }, 20)
+  const toggleChatbot = () => {
+    setShowChatbot(!showChatbot);
+  };
 
-    const handleScroll = () => {
-      scrollRef.current = window.scrollY
-    }
-
-    window.addEventListener('scroll', handleScroll)
-
-    return () => {
-      clearInterval(timer)
-      document.body.style.margin = ''
-      document.body.style.padding = ''
-      document.body.style.overflow = ''
-      window.removeEventListener('scroll', handleScroll)
-    }
-  }, [])
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen w-screen bg-black text-white font-sans">
-        <h1 className="text-6xl font-serif mb-2 text-blue-400 animate-pulse">Rishab Singh</h1>
-        <p className="text-2xl mb-8 text-blue-300">
-          Software Engineer <span className="text-3xl text-blue-500 animate-ping">*</span>
-        </p>
-        <div className="w-64 h-4 bg-gray-800 rounded-full overflow-hidden border-2 border-blue-500 shadow-lg shadow-blue-500/50">
-          <div 
-            className="h-full bg-gradient-to-r from-blue-400 to-green-500 transition-all duration-300 ease-out"
-            style={{ 
-              width: `${loadingProgress}%`,
-              boxShadow: '0 0 10px #3b82f6, 0 0 20px #3b82f6, 0 0 30px #3b82f6'
-            }}
-          ></div>
-        </div>
-        <p className="text-xl mt-4 font-mono text-blue-400">{loadingProgress.toString().padStart(3, '0')}%</p>
-      </div>
-    )
+  if (!isMounted) {
+    return null; // or a loading spinner
   }
 
   return (
-    <div className="fixed inset-0 bg-black text-white overflow-hidden font-sans">
-      <Canvas camera={{ position: [0, 0, 20], fov: 75 }}>
-        <AuroraBorealis />
-        <EffectComposer>
-          <Bloom
-            kernelSize={KernelSize.LARGE}
-            luminanceThreshold={15}
-            luminanceSmoothing={0.05}
-            intensity={1.5}
-          />
-          <Pixelation granularity={0.5} />
-        </EffectComposer>
-      </Canvas>
-      <Navbar />
-      <main className="absolute inset-0 flex flex-col justify-center items-center text-center p-4">
-        {/* ... main content ... */}
-      </main>
+    <ScrollArea className="h-full w-full">
+      <div className="fixed inset-0 bg-black text-white overflow-hidden font-sans">
+        {/* Full-size Canvas */}
+        <div className="absolute inset-0">
+          <Canvas camera={{ position: [0, 0, 20], fov: 75 }}>
+            <RotatingScene>
+              <AuroraBorealis />
+              <EffectComposer>
+                <Bloom
+                  kernelSize={KernelSize.LARGE}
+                  luminanceThreshold={15}
+                  luminanceSmoothing={0.05}
+                  intensity={1.5}
+                />
+                <Pixelation granularity={0.5} />
+                
+              </EffectComposer>
+              <AuroraEffect />
+            </RotatingScene>
+          </Canvas>
+        </div>
 
-      {/* Chatbot Toggle Button */}
-      <button
-        className="fixed bottom-4 right-4 bg-gradient-to-r from-green-400 to-blue-500 p-4 rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300"
-        onClick={() => setIsChatbotOpen(true)}
-      >
-        <FaComments className="text-white text-2xl" />
-      </button>
+        
 
-      {/* Chatbot Component */}
-      {isChatbotOpen && <Chatbot onClose={() => setIsChatbotOpen(false)} />}
-    </div>
-  )
+        
+        {/* Navbar moved to footer */}
+        {/* <footer className="fixed bottom-0 left-0 right-0"> */}
+          <Navbar />
+        {/* </footer> */}
+
+
+        {/* Render Chatbot when showChatbot is true */}
+        {showChatbot && <ChatbotComponent onClose={toggleChatbot} />}
+
+        {/* Chatbot Toggle Button */}
+        <button
+          onClick={toggleChatbot}
+          className="fixed bottom-4 right-4 bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-300"
+          aria-label="Toggle Chatbot"
+        >
+          <FaComments size={24} />
+        </button>
+      </div>
+    </ScrollArea>
+  );
 }
