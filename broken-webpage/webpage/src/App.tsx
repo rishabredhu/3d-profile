@@ -1,24 +1,54 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import LandingPage from './components/LandingPage';
+import SpaceScene from './components/SpaceScene';
 import './App.css';
-import DesertSunset from './components/DesertSunset';
+
+// Import necessary types from Three.js
+import { Vector3 } from 'three';
+
+// Define props interface for SpaceScene
+interface SpaceSceneProps {
+  scale: Vector3;
+  position: Vector3;
+}
 
 /**
- * App Component
+ * App component
  * 
- * This is the main component of the application. It renders the DesertSunset component
- * which is designed to occupy the full viewport.
- * 
- * Note: To ensure the component loads on the entire screen, we've made the following changes:
- * 1. Removed the nested section elements
- * 2. Applied full viewport height and width to the app-container
- * 3. Removed any padding or margin that might prevent full-screen display
+ * The main component that manages the loading of the LandingPage and Spaceman components.
+ * It switches from LandingPage to Spaceman after a simulated loading period.
  */
-const App: React.FC = () => {
+function App() {
+  // State to manage whether the LandingPage has completed loading
+  const [isLandingPageLoaded, setIsLandingPageLoaded] = useState(false);
+
+  /**
+   * Simulates loading of the LandingPage by setting a timeout.
+   * The Spaceman component will be displayed once the LandingPage has completed loading.
+   */
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLandingPageLoaded(true);
+    }, 2000); // Simulates a 2-second loading delay
+
+    return () => clearTimeout(timer); // Cleanup the timer when the component unmounts
+  }, []);
+
   return (
-    <div className="app-container" style={{ height: '100vh', width: '100vw', overflow: 'hidden' }}>
-      <DesertSunset />
+    <div className="app-container">
+      <main className="content-area">
+        {/* Render either the LandingPage or the Spaceman component based on loading state */}
+        {!isLandingPageLoaded ? (
+          <LandingPage />
+        ) : (
+          <SpaceScene
+            scaleVector={new Vector3(1, 1, 1)}
+            positionVector={new Vector3(0, 0, 0)}
+          />
+        )}
+      </main>
     </div>
   );
-};
+}
 
 export default App;

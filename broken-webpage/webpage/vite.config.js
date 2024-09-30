@@ -4,9 +4,14 @@ import { defineConfig } from "vite"
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    'process.env': {},
+    global: {},
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      'next/image': 'next/dist/client/image.js',
     },
   },
   css: {
