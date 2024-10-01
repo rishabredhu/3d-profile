@@ -5,7 +5,15 @@ import { OrbitControls, useAnimations, useGLTF } from '@react-three/drei'
 import { Mesh, Vector3 } from 'three'
 import { GLTF } from 'three-stdlib'
 import * as THREE from 'three'
-import LightSpeed from './LightSpeed'
+import SpaceWarpCanvas from './SpaceWarp'
+import Navbar from './Navbar'
+import AboutMe from './AboutMe'
+
+
+
+
+
+
 
 // Define the type for our GLTF result
 type GLTFResult = GLTF & {
@@ -112,6 +120,7 @@ const SpaceScene: React.FC<SpaceSceneProps> = ({ scaleVector: initialScaleVector
 
   return (
     <div ref={scrollContainerRef} style={{ width: '100vw', height: '100vh', overflow: 'auto' }}>
+      <Navbar />
       <Canvas
         className="w-full h-screen bg-transparent z-10"
         camera={{ position: [0, 0, 5], fov: 75, near: 0.1, far: 1000 }}
@@ -132,13 +141,14 @@ const SpaceScene: React.FC<SpaceSceneProps> = ({ scaleVector: initialScaleVector
           />
           {/* Hemisphere light simulates sky and ground reflection */}
           <hemisphereLight args={["#b1e1ff", "#000000", 1]} />
-
           {/* Spaceman model with dynamic scale and position */}
           <Spaceman scale={scaleVector} position={positionVector} />
           {/* Light speed effect component */}
-          
         </Suspense>
+
       </Canvas>
+      <SpaceWarpCanvas scrollContainer={scrollContainerRef} />
+      
     </div>
   )
 }
